@@ -28,3 +28,6 @@ phpunit.phar
 
 # images
 /web/images
+
+# config
+/config/db.php
