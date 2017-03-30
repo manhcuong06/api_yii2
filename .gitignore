@@ -31,3 +31,4 @@ phpunit.phar
 
 # config
 /config/db.php
+/config/*-local.php
