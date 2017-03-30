@@ -27,4 +27,4 @@ phpunit.phar
 /phpunit.xml
 
 # images
-/web/public/images
+/web/images
