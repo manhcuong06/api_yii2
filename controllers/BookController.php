@@ -41,6 +41,7 @@ class BookController extends Controller
     public function beforeAction($action)
     {
         $this->enableCsrfValidation = false;
+
         return parent::beforeAction($action);
     }
 
@@ -50,7 +51,7 @@ class BookController extends Controller
      */
     public function actionIndex()
     {
-        $books      = Book::find()->asArray()->all();
+        $books      = Book::getAllBooks();
         $categories = ArrayHelper::map(BookCategory::getAllBookCategories(), 'id', 'ten_loai_sach');
         $publishers = ArrayHelper::map(Publisher::getAllPublishers(), 'id', 'ten_nha_xuat_ban');
         $writers    = ArrayHelper::map(Writer::getAllWriters(), 'id', 'ten_tac_gia');
@@ -70,16 +71,16 @@ class BookController extends Controller
      */
     public function actionView($id)
     {
-        $book       = ArrayHelper::toArray($this->findModel($id));
-        $categories = BookCategory::getAllBookCategories();
-        $publishers = Publisher::getAllPublishers();
-        $writers    = Writer::getAllWriters();
+        $book      = $this->findModel($id);
+        $category  = $book->category;
+        $publisher = $book->publisher;
+        $writer    = $book->writer;
 
         return json_encode(array_merge([
-            'book'       => $book,
-            'categories' => $categories,
-            'publishers' => $publishers,
-            'writers'    => $writers,
+            'book'       => ArrayHelper::toArray($book),
+            'categories' => ArrayHelper::toArray($category),
+            'publishers' => ArrayHelper::toArray($publisher),
+            'writers'    => ArrayHelper::toArray($writer),
         ]));
     }
 
@@ -92,9 +93,14 @@ class BookController extends Controller
     {
         $model = new Book();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        } else {
+        $post['Book'] = json_decode(file_get_contents("php://input"), true);
+        $success = false;
+
+        if ($model->load($post) && $model->save()) {
+            $success = true;
         }
+
+        return json_encode($success);
     }
 
     /**
@@ -106,16 +112,15 @@ class BookController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $data = [
-            'status' => 'Successful',
-        ];
-        $post = json_decode(file_get_contents("php://input"));
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        } else {
+        $post['Book'] = json_decode(file_get_contents("php://input"), true);
+        $success = false;
+
+        if ($model->load($post) && $model->save()) {
+            $success = true;
         }
 
-        return json_encode($post);
+        return json_encode($success);
     }
 
     /**

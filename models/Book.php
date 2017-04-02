@@ -73,4 +73,29 @@ class Book extends \yii\db\ActiveRecord
             'noi_bat' => 'Noi Bat',
         ];
     }
+
+    public function getCategory()
+    {
+        return $this->hasOne(BookCategory::className(), ['id' => 'id_loai_sach']);
+    }
+
+    public function getPublisher()
+    {
+        return $this->hasOne(Publisher::className(), ['id' => 'id_nha_xuat_ban']);
+    }
+
+    public function getWriter()
+    {
+        return $this->hasOne(Writer::className(), ['id' => 'id_tac_gia']);
+    }
+
+    public static function getAllBooks()
+    {
+        return Book::find()
+            ->select(['id', 'ten_sach', 'id_tac_gia', 'id_loai_sach', 'id_nha_xuat_ban', 'trang_thai', 'hinh', 'don_gia'])
+            ->orderBy(['id' => SORT_DESC])
+            ->asArray()
+            ->all()
+        ;
+    }
 }
