@@ -131,9 +131,11 @@ class BookController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $book_id = json_decode(file_get_contents("php://input"), true);
+        $this->findModel($book_id)->delete();
+        $success = true;
 
-        return $this->redirect(['index']);
+        return json_encode($success);
     }
 
     /**
