@@ -97,45 +97,22 @@ class BookController extends Controller
     public function actionCreate()
     {
         $model = new Book();
-        $response['status'] = 'failed';
 
-        $post['Book'] = Yii::$app->request->post();
-        // unset($post['Book']['id']);
+        $post['Book'] = json_decode(file_get_contents("php://input"), true);
+        $success = false;
 
-        if ($_POST) {
-            // $post['Book'] = Yii::$app->request->post();
-            // unset($post['Book']['id']);
-            // echo '<pre>', print_r($post), '</pre>';
-            // echo '<pre>', print_r($model), '</pre>';
-            if ($model->load($post)) {
-                // echo '<pre>', print_r($model), '</pre>';
-                // $file = $_FILES['image'];
-                // $file['tempName'] = $file['tmp_name'];
-                // unset($file['tmp_name']);
-
-                // $uploadForm = new UploadForm();
-                // $uploadForm->imageFile = new UploadedFile($file);
-                // $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
-
-                // if ($uploadForm->upload()) {
-                //     $model->save();
-                //     $response['status'] = 'success';
-                // }
-
-                if ($model->save()) {
-                    $response['status'] = 'success';
-                }
-                // return json_encode($model->attributes);
-                return json_encode($post);
-            }
-            // return;
+        if ($model->load($post)) {
+            $success = 'Load ';
+        }
+        if ($model->save()) {
+            $success .= 'Save';
         }
 
         // return $this->render('create', [
         //     'model' => $model,
         // ]);
 
-        return json_encode($response);
+        return json_encode($success);
     }
 
     /**
@@ -152,9 +129,21 @@ class BookController extends Controller
         $success = false;
 
         if ($model->load($post) && $model->save()) {
+            $file = $_FILES['image'];
+            $file['tempName'] = $file['tmp_name'];
+            unset($file['tmp_name']);
+
+            $uploadForm = new UploadForm();
+            $uploadForm->imageFile = new UploadedFile($file);
+            $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
+
+            if ($uploadForm->upload()) {
+                $response['status'] = 'success';
+            }
             $success = true;
         }
 
+        return json_encode($post);
         return json_encode($success);
     }
 
