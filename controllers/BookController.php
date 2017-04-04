@@ -13,7 +13,6 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use yii\web\UploadedFile;
-use yii\helpers\Html;
 
 /**
  * BookController implements the CRUD actions for Book model.
@@ -98,15 +97,46 @@ class BookController extends Controller
     {
         $model = new Book();
 
-        $post['Book'] = json_decode(file_get_contents("php://input"), true);
+        $post['Book'] = Yii::$app->request->post();
         $success = false;
 
-        if ($model->load($post)) {
-            $success = 'Load ';
+        // $model->load($post);
+        $post = Yii::$app->request->post();
+        unset($post['trang_thai']);
+        unset($post['noi_bat']);
+        $i = 1;
+        $property = '';
+        foreach ($post as $key => $value) {
+            if ($i <= 15) {
+                $property .= $key.' - ';
+                $model->setAttributes([$key => $value]);
+                $i++;
+            }
         }
-        if ($model->save()) {
-            $success .= 'Save';
+        $model->save();
+        // return json_encode($property.' - '.$i);
+        return json_encode(array_merge([
+            'post'      => $post,
+            'model'     => $model->attributes,
+            'property'  => $property.' - '.$i,
+        ]));
+
+        if ($model->load($post) && $model->save()) {
+            $file = $_FILES['image'];
+            $file['tempName'] = $file['tmp_name'];
+            unset($file['tmp_name']);
+
+            $uploadForm = new UploadForm();
+            $uploadForm->imageFile = new UploadedFile($file);
+            $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
+
+            if ($uploadForm->upload()) {
+                $response['status'] = 'success';
+            }
+            $success = true;
         }
+
+        return json_encode($success);
 
         // return $this->render('create', [
         //     'model' => $model,
@@ -124,6 +154,8 @@ class BookController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+
+        echo '<pre>', print_r($model), '</pre>';return;
 
         $post['Book'] = Yii::$app->request->post();
         $success = false;
@@ -143,7 +175,6 @@ class BookController extends Controller
             $success = true;
         }
 
-        return json_encode($post);
         return json_encode($success);
     }
 
