@@ -7,10 +7,13 @@ use app\models\Book;
 use app\models\BookCategory;
 use app\models\Publisher;
 use app\models\Writer;
+use app\models\UploadForm;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\web\UploadedFile;
+use yii\helpers\Html;
 
 /**
  * BookController implements the CRUD actions for Book model.
@@ -32,6 +35,8 @@ class BookController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
+                    // 'create' => ['POST'],
+                    // 'update' => ['POST'],
                     'delete' => ['POST'],
                 ],
             ],
@@ -92,15 +97,48 @@ class BookController extends Controller
     public function actionCreate()
     {
         $model = new Book();
+        $uploadForm = new UploadForm();
 
-        $post['Book'] = json_decode(file_get_contents("php://input"), true);
-        $success = false;
+        if (Yii::$app->request->isPost) {
+            $uploadForm->imageFile = UploadedFile::getInstance($model, 'hinh');
+            $uploadForm->folderName = 'sach';
+            if ($uploadForm->upload()) {
+                echo 'Yes';
+            } else {
+                echo 'No';
+            }
+            echo '<pre>', print_r($_FILES), '</pre>';
+            // echo '<pre>', print_r($uploadForm), '</pre>';
+            return;
+        }
+        $model = new Book();
 
-        if ($model->load($post) && $model->save()) {
-            $success = true;
+        if ($post = Yii::$app->request->post()) {
+            // echo '<pre>', print_r($post), '</pre>';
+            // echo '<pre>', print_r($_FILES), '</pre>';
+            // return;
         }
 
-        return json_encode($success);
+        // $post['Book'] = Yii::$app->request->post();
+        $success = false;
+
+        // if ($model->load($post) && $model->save()) {
+        //     $success = true;
+        // }
+
+        if ($model->load($post)) {
+            $success = true;
+            return json_encode($success);
+        }
+
+        return $this->render('create', [
+            'model'  => $model,
+        ]);
+
+        // return json_encode(array_merge([
+        //     'post' => $post,
+        //     'file' => $_FILES,
+        // ]));
     }
 
     /**
@@ -113,12 +151,12 @@ class BookController extends Controller
     {
         $model = $this->findModel($id);
 
-        $post['Book'] = json_decode(file_get_contents("php://input"), true);
+        $post['Book'] = Yii::$app->request->post();
         $success = false;
 
-        if ($model->load($post) && $model->save()) {
-            $success = true;
-        }
+        // if ($model->load($post) && $model->save()) {
+        //     $success = true;
+        // }
 
         return json_encode($success);
     }
