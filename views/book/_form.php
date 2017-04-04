@@ -18,12 +18,10 @@ use yii\widgets\ActiveForm;
 
     <div class="form-group">
         <label for="book-image">Hinh 1</label>
-        <?= Html::fileInput('Book[hinh]', '', [
+        <?= Html::fileInput('image', '', [
             'id' => 'book-image',
         ]) ?>
     </div>
-
-
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

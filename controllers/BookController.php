@@ -97,48 +97,45 @@ class BookController extends Controller
     public function actionCreate()
     {
         $model = new Book();
-        $uploadForm = new UploadForm();
+        $response['status'] = 'failed';
 
-        if (Yii::$app->request->isPost) {
-            $uploadForm->imageFile = UploadedFile::getInstance($model, 'hinh');
-            $uploadForm->folderName = 'sach';
-            if ($uploadForm->upload()) {
-                echo 'Yes';
-            } else {
-                echo 'No';
-            }
-            echo '<pre>', print_r($_FILES), '</pre>';
-            // echo '<pre>', print_r($uploadForm), '</pre>';
-            return;
-        }
-        $model = new Book();
+        $post['Book'] = Yii::$app->request->post();
+        // unset($post['Book']['id']);
 
-        if ($post = Yii::$app->request->post()) {
+        if ($_POST) {
+            // $post['Book'] = Yii::$app->request->post();
+            // unset($post['Book']['id']);
             // echo '<pre>', print_r($post), '</pre>';
-            // echo '<pre>', print_r($_FILES), '</pre>';
+            // echo '<pre>', print_r($model), '</pre>';
+            if ($model->load($post)) {
+                // echo '<pre>', print_r($model), '</pre>';
+                // $file = $_FILES['image'];
+                // $file['tempName'] = $file['tmp_name'];
+                // unset($file['tmp_name']);
+
+                // $uploadForm = new UploadForm();
+                // $uploadForm->imageFile = new UploadedFile($file);
+                // $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
+
+                // if ($uploadForm->upload()) {
+                //     $model->save();
+                //     $response['status'] = 'success';
+                // }
+
+                if ($model->save()) {
+                    $response['status'] = 'success';
+                }
+                // return json_encode($model->attributes);
+                return json_encode($post);
+            }
             // return;
         }
 
-        // $post['Book'] = Yii::$app->request->post();
-        $success = false;
+        // return $this->render('create', [
+        //     'model' => $model,
+        // ]);
 
-        // if ($model->load($post) && $model->save()) {
-        //     $success = true;
-        // }
-
-        if ($model->load($post)) {
-            $success = true;
-            return json_encode($success);
-        }
-
-        return $this->render('create', [
-            'model'  => $model,
-        ]);
-
-        // return json_encode(array_merge([
-        //     'post' => $post,
-        //     'file' => $_FILES,
-        // ]));
+        return json_encode($response);
     }
 
     /**
@@ -154,9 +151,9 @@ class BookController extends Controller
         $post['Book'] = Yii::$app->request->post();
         $success = false;
 
-        // if ($model->load($post) && $model->save()) {
-        //     $success = true;
-        // }
+        if ($model->load($post) && $model->save()) {
+            $success = true;
+        }
 
         return json_encode($success);
     }
