@@ -34,8 +34,8 @@ class BookController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    // 'create' => ['POST'],
-                    // 'update' => ['POST'],
+                    'create' => ['POST'],
+                    'update' => ['POST'],
                     'delete' => ['POST'],
                 ],
             ],
@@ -99,16 +99,23 @@ class BookController extends Controller
         $model = new Book();
         $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post) && $model->save()) {
+        if ($model->load($post)) {
             $file = $_FILES['image'];
+
+            // UploadedFile class has "tempName", no "temp_name"
+            // Change key from "tmp_name" to "tempName"
             $file['tempName'] = $file['tmp_name'];
             unset($file['tmp_name']);
+
+            // Append date to file name
+            $file['name'] = date('Y-m-d_H-i-s_') . $file['name'];
+            $model->hinh = $file['name'];
 
             $uploadForm = new UploadForm();
             $uploadForm->imageFile = new UploadedFile($file);
             $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
 
-            if ($uploadForm->upload()) {
+            if ($uploadForm->upload() && $model->save()) {
                 $response['status'] = 'success';
             }
         }
@@ -128,11 +135,18 @@ class BookController extends Controller
         $model = $this->findModel($id);
         $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post) && $model->save()) {
+        if ($model->load($post)) {
             if ($_FILES) {
                 $file = $_FILES['image'];
+
+                // UploadedFile class has "tempName", no "temp_name"
+                // Change key from "tmp_name" to "tempName"
                 $file['tempName'] = $file['tmp_name'];
                 unset($file['tmp_name']);
+
+                // Append date to file name
+                $file['name'] = date('Y-m-d_H-i-s_') . $file['name'];
+                $model->hinh = $file['name'];
 
                 $uploadForm = new UploadForm();
                 $uploadForm->imageFile = new UploadedFile($file);
@@ -141,7 +155,9 @@ class BookController extends Controller
                 if ($uploadForm->upload()) {
                 }
             }
-            $response['status'] = 'success';
+            if ($model->save()) {
+                $response['status'] = 'success';
+            }
         }
 
         return json_encode($response);
