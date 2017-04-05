@@ -95,31 +95,9 @@ class BookController extends Controller
      */
     public function actionCreate()
     {
+        $response['status'] = 'failed';
         $model = new Book();
-
         $post['Book'] = Yii::$app->request->post();
-        $success = false;
-
-        // $model->load($post);
-        $post = Yii::$app->request->post();
-        unset($post['trang_thai']);
-        unset($post['noi_bat']);
-        $i = 1;
-        $property = '';
-        foreach ($post as $key => $value) {
-            if ($i <= 15) {
-                $property .= $key.' - ';
-                $model->setAttributes([$key => $value]);
-                $i++;
-            }
-        }
-        $model->save();
-        // return json_encode($property.' - '.$i);
-        return json_encode(array_merge([
-            'post'      => $post,
-            'model'     => $model->attributes,
-            'property'  => $property.' - '.$i,
-        ]));
 
         if ($model->load($post) && $model->save()) {
             $file = $_FILES['image'];
@@ -133,16 +111,9 @@ class BookController extends Controller
             if ($uploadForm->upload()) {
                 $response['status'] = 'success';
             }
-            $success = true;
         }
 
-        return json_encode($success);
-
-        // return $this->render('create', [
-        //     'model' => $model,
-        // ]);
-
-        return json_encode($success);
+        return json_encode($response);
     }
 
     /**
@@ -153,29 +124,27 @@ class BookController extends Controller
      */
     public function actionUpdate($id)
     {
+        $response['status'] = 'failed';
         $model = $this->findModel($id);
-
-        echo '<pre>', print_r($model), '</pre>';return;
-
         $post['Book'] = Yii::$app->request->post();
-        $success = false;
 
         if ($model->load($post) && $model->save()) {
-            $file = $_FILES['image'];
-            $file['tempName'] = $file['tmp_name'];
-            unset($file['tmp_name']);
+            if ($_FILES) {
+                $file = $_FILES['image'];
+                $file['tempName'] = $file['tmp_name'];
+                unset($file['tmp_name']);
 
-            $uploadForm = new UploadForm();
-            $uploadForm->imageFile = new UploadedFile($file);
-            $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
+                $uploadForm = new UploadForm();
+                $uploadForm->imageFile = new UploadedFile($file);
+                $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
 
-            if ($uploadForm->upload()) {
-                $response['status'] = 'success';
+                if ($uploadForm->upload()) {
+                }
             }
-            $success = true;
+            $response['status'] = 'success';
         }
 
-        return json_encode($success);
+        return json_encode($response);
     }
 
     /**
@@ -188,9 +157,9 @@ class BookController extends Controller
     {
         $book_id = json_decode(file_get_contents("php://input"), true);
         $this->findModel($book_id)->delete();
-        $success = true;
+        $response['status'] = 'success';
 
-        return json_encode($success);
+        return json_encode($response);
     }
 
     /**
