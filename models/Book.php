@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "bs_sach".
@@ -87,6 +88,54 @@ class Book extends \yii\db\ActiveRecord
     public function getWriter()
     {
         return $this->hasOne(Writer::className(), ['id' => 'id_tac_gia']);
+    }
+
+    public function uploadImage()
+    {
+        $file = $_FILES['image'];
+
+        /******
+        UploadedFile class has "tempName", no "temp_name" key
+        Must change key from "tmp_name" to "tempName" before constructor
+
+        $_FILES = [
+            ...
+            'tmp_name' => '',
+            ...
+        ];
+
+        UploadedFile = [
+            ...
+            'tempName' => '',
+            ...
+        ];
+        ******/
+        $file['tempName'] = $file['tmp_name'];
+        unset($file['tmp_name']);
+
+        // Append date to file name
+        $file['name'] = date('Y-m-d_H-i-s_') . $file['name'];
+        $this->hinh = $file['name'];
+
+        $uploadForm = new UploadForm();
+        $uploadForm->imageFile = new UploadedFile($file);
+        $uploadForm->imagePath = Yii::getAlias('@web') . Yii::$app->params['image_path']['Book'];
+
+        if (!$uploadForm->upload()) {
+            return false;
+        }
+        return true;
+    }
+
+    public function deleteImage()
+    {
+        $image_path = Yii::getAlias('@web') . Yii::$app->params['image_path']['Book'] . $this->hinh;
+
+        if (file_exists($image_path)) {
+            unlink($image_path);
+            return true;
+        }
+        return false;
     }
 
     public static function getAllBooks()

@@ -7,10 +7,12 @@ use app\models\Book;
 use app\models\BookCategory;
 use app\models\Publisher;
 use app\models\Writer;
+use app\models\UploadForm;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\web\UploadedFile;
 
 /**
  * BookController implements the CRUD actions for Book model.
@@ -32,6 +34,8 @@ class BookController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
+                    'create' => ['POST'],
+                    'update' => ['POST'],
                     'delete' => ['POST'],
                 ],
             ],
@@ -93,14 +97,14 @@ class BookController extends Controller
     {
         $model = new Book();
 
-        $post['Book'] = json_decode(file_get_contents("php://input"), true);
-        $success = false;
+        $response['status'] = 'failed';
+        $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post) && $model->save()) {
-            $success = true;
+        if ($model->load($post) && $model->uploadImage() && $model->save()) {
+            $response['status'] = 'success';
         }
 
-        return json_encode($success);
+        return json_encode($response);
     }
 
     /**
@@ -113,14 +117,22 @@ class BookController extends Controller
     {
         $model = $this->findModel($id);
 
-        $post['Book'] = json_decode(file_get_contents("php://input"), true);
-        $success = false;
+        $response['status'] = 'failed';
+        $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post) && $model->save()) {
-            $success = true;
+        if ($_FILES) {
+            $response['delete_old_image'] = $model->deleteImage();
+            $model->load($post);
+            $response['upload_new_image'] = $model->uploadImage();
+        } else {
+            $model->load($post);
         }
 
-        return json_encode($success);
+        if ($model->save()) {
+            $response['status'] = 'success';
+        }
+
+        return json_encode($response);
     }
 
     /**
@@ -132,10 +144,28 @@ class BookController extends Controller
     public function actionDelete($id)
     {
         $book_id = json_decode(file_get_contents("php://input"), true);
-        $this->findModel($book_id)->delete();
-        $success = true;
 
-        return json_encode($success);
+        $model = $this->findModel($book_id);
+        $response['delete_old_image'] = $model->deleteImage();
+        $model->delete();
+        $response['status'] = 'success';
+
+        return json_encode($response);
+    }
+
+    public function actionInfo($id = null)
+    {
+        $book       = ArrayHelper::toArray(Book::findOne($id));
+        $categories = BookCategory::getAllBookCategories();
+        $publishers = Publisher::getAllPublishers();
+        $writers    = Writer::getAllWriters();
+
+        return json_encode(array_merge([
+            'book'       => $book,
+            'categories' => $categories,
+            'publishers' => $publishers,
+            'writers'    => $writers,
+        ]));
     }
 
     /**
@@ -152,20 +182,5 @@ class BookController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
-    }
-
-    public function actionInfo($id = null)
-    {
-        $book       = ArrayHelper::toArray(Book::findOne($id));
-        $categories = BookCategory::getAllBookCategories();
-        $publishers = Publisher::getAllPublishers();
-        $writers    = Writer::getAllWriters();
-
-        return json_encode(array_merge([
-            'book'       => $book,
-            'categories' => $categories,
-            'publishers' => $publishers,
-            'writers'    => $writers,
-        ]));
     }
 }
