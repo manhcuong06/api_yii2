@@ -95,29 +95,13 @@ class BookController extends Controller
      */
     public function actionCreate()
     {
-        $response['status'] = 'failed';
         $model = new Book();
+
+        $response['status'] = 'failed';
         $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post)) {
-            $file = $_FILES['image'];
-
-            // UploadedFile class has "tempName", no "temp_name"
-            // Change key from "tmp_name" to "tempName"
-            $file['tempName'] = $file['tmp_name'];
-            unset($file['tmp_name']);
-
-            // Append date to file name
-            $file['name'] = date('Y-m-d_H-i-s_') . $file['name'];
-            $model->hinh = $file['name'];
-
-            $uploadForm = new UploadForm();
-            $uploadForm->imageFile = new UploadedFile($file);
-            $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
-
-            if ($uploadForm->upload() && $model->save()) {
-                $response['status'] = 'success';
-            }
+        if ($model->load($post) && $model->uploadImage() && $model->save()) {
+            $response['status'] = 'success';
         }
 
         return json_encode($response);
@@ -131,33 +115,21 @@ class BookController extends Controller
      */
     public function actionUpdate($id)
     {
-        $response['status'] = 'failed';
         $model = $this->findModel($id);
+
+        $response['status'] = 'failed';
         $post['Book'] = Yii::$app->request->post();
 
-        if ($model->load($post)) {
-            if ($_FILES) {
-                $file = $_FILES['image'];
+        if ($_FILES) {
+            $response['delete_old_image'] = $model->deleteImage();
+            $model->load($post);
+            $response['upload_new_image'] = $model->uploadImage();
+        } else {
+            $model->load($post);
+        }
 
-                // UploadedFile class has "tempName", no "temp_name"
-                // Change key from "tmp_name" to "tempName"
-                $file['tempName'] = $file['tmp_name'];
-                unset($file['tmp_name']);
-
-                // Append date to file name
-                $file['name'] = date('Y-m-d_H-i-s_') . $file['name'];
-                $model->hinh = $file['name'];
-
-                $uploadForm = new UploadForm();
-                $uploadForm->imageFile = new UploadedFile($file);
-                $uploadForm->imagePath = Yii::$app->params['image_path']['Book'];
-
-                if ($uploadForm->upload()) {
-                }
-            }
-            if ($model->save()) {
-                $response['status'] = 'success';
-            }
+        if ($model->save()) {
+            $response['status'] = 'success';
         }
 
         return json_encode($response);
@@ -172,10 +144,28 @@ class BookController extends Controller
     public function actionDelete($id)
     {
         $book_id = json_decode(file_get_contents("php://input"), true);
-        $this->findModel($book_id)->delete();
+
+        $model = $this->findModel($book_id);
+        $response['delete_old_image'] = $model->deleteImage();
+        $model->delete();
         $response['status'] = 'success';
 
         return json_encode($response);
+    }
+
+    public function actionInfo($id = null)
+    {
+        $book       = ArrayHelper::toArray(Book::findOne($id));
+        $categories = BookCategory::getAllBookCategories();
+        $publishers = Publisher::getAllPublishers();
+        $writers    = Writer::getAllWriters();
+
+        return json_encode(array_merge([
+            'book'       => $book,
+            'categories' => $categories,
+            'publishers' => $publishers,
+            'writers'    => $writers,
+        ]));
     }
 
     /**
@@ -192,20 +182,5 @@ class BookController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
-    }
-
-    public function actionInfo($id = null)
-    {
-        $book       = ArrayHelper::toArray(Book::findOne($id));
-        $categories = BookCategory::getAllBookCategories();
-        $publishers = Publisher::getAllPublishers();
-        $writers    = Writer::getAllWriters();
-
-        return json_encode(array_merge([
-            'book'       => $book,
-            'categories' => $categories,
-            'publishers' => $publishers,
-            'writers'    => $writers,
-        ]));
     }
 }
