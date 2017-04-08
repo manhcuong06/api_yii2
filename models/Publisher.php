@@ -50,7 +50,7 @@ class Publisher extends \yii\db\ActiveRecord
     public static function getAllPublishers()
     {
         return $publishers = Publisher::find()
-            ->select(['id', 'ten_nha_xuat_ban', 'text' => 'ten_nha_xuat_ban'])
+            ->select(['value' => 'id', 'label' => 'ten_nha_xuat_ban'])
             ->orderBy(['ten_nha_xuat_ban' => SORT_ASC])
             ->asArray()
             ->all()
