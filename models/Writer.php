@@ -50,7 +50,7 @@ class Writer extends \yii\db\ActiveRecord
     public static function getAllWriters()
     {
         return $writers = Writer::find()
-            ->select(['id', 'ten_tac_gia', 'text' => 'ten_tac_gia'])
+            ->select(['value' => 'id', 'label' => 'ten_tac_gia'])
             ->orderBy(['ten_tac_gia' => SORT_ASC])
             ->asArray()
             ->all()

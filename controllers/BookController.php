@@ -56,9 +56,9 @@ class BookController extends Controller
     public function actionIndex()
     {
         $books      = Book::getAllBooks();
-        $categories = ArrayHelper::map(BookCategory::getAllBookCategories(), 'id', 'ten_loai_sach');
-        $publishers = ArrayHelper::map(Publisher::getAllPublishers(), 'id', 'ten_nha_xuat_ban');
-        $writers    = ArrayHelper::map(Writer::getAllWriters(), 'id', 'ten_tac_gia');
+        $categories = ArrayHelper::map(BookCategory::getAllBookCategories(), 'value', 'label');
+        $publishers = ArrayHelper::map(Publisher::getAllPublishers(), 'value', 'label');
+        $writers    = ArrayHelper::map(Writer::getAllWriters(), 'value', 'label');
 
         return json_encode(array_merge([
             'books'      => $books,
@@ -102,6 +102,7 @@ class BookController extends Controller
 
         if ($model->load($post) && $model->uploadImage() && $model->save()) {
             $response['status'] = 'success';
+            $response['id']     = $model->id;
         }
 
         return json_encode($response);
@@ -130,6 +131,7 @@ class BookController extends Controller
 
         if ($model->save()) {
             $response['status'] = 'success';
+            $response['id']     = $model->id;
         }
 
         return json_encode($response);

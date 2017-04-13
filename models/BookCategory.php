@@ -51,7 +51,7 @@ class BookCategory extends \yii\db\ActiveRecord
     public static function getAllBookCategories()
     {
         return $categories = BookCategory::find()
-            ->select(['id', 'ten_loai_sach', 'text' => 'ten_loai_sach'])
+            ->select(['value' => 'id', 'label' => 'ten_loai_sach'])
             ->orderBy(['ten_loai_sach' => SORT_ASC])
             ->asArray()
             ->all()
