@@ -141,7 +141,7 @@ class Book extends \yii\db\ActiveRecord
     public static function getAllBooks()
     {
         return Book::find()
-            ->select(['id', 'ten_sach', 'id_tac_gia', 'id_loai_sach', 'id_nha_xuat_ban', 'trang_thai', 'hinh', 'don_gia'])
+            ->select(['id', 'ten_sach', 'id_tac_gia', 'id_loai_sach', 'id_nha_xuat_ban', 'trang_thai', 'hinh', 'don_gia', 'noi_bat'])
             ->orderBy(['id' => SORT_DESC])
             ->asArray()
             ->all()

@@ -170,6 +170,13 @@ class BookController extends Controller
         ]));
     }
 
+    public function actionAll()
+    {
+        $books = Book::getAllBooks();
+
+        return json_encode($books);
+    }
+
     /**
      * Finds the Book model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
