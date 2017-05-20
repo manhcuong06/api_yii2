@@ -40,9 +40,9 @@ class BannerController extends Controller
      */
     public function actionIndex()
     {
-        $banner = Banner::getAllBanners();
+        $banners = Banner::getAllBanners();
 
-        return json_encode($banner);
+        return json_encode($banners);
     }
 
     /**
